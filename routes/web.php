@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\AuthController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -30,3 +31,17 @@ Route::put('/proyectos/{id}', [ProjectController::class, 'update'])->whereNumber
 
 // Requerimiento 5: Obtener un proyecto por su id
 Route::get('/proyectos/{id}', [ProjectController::class, 'show'])->name('projects.show');
+
+// Rutas de invitados (usuario NO logueado)
+Route::middleware('guest')->group(function () {
+    Route::get('/registro', [AuthController::class, 'showRegister'])->name('register');
+    Route::post('/registro', [AuthController::class, 'register'])->name('register.store');
+
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.store');
+});
+
+// Rutas de usuario autenticado
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+});
