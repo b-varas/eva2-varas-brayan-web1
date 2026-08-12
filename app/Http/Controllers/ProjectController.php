@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 /**
  * Controlador encargado de gestionar los proyectos.
- * Conecta las rutas con el modelo Project y con las vistas.
+ * Conecta las rutas con el modelo Project (Eloquent) y con las vistas.
  */
 
 use App\Models\Project;
@@ -14,7 +14,6 @@ class ProjectController extends Controller
 {
     /**
      * Requerimiento 1: Listar todos los proyectos.
-     * Pide los datos al modelo y se los entrega a la vista.
      */
     public function index()
     {
@@ -52,6 +51,9 @@ class ProjectController extends Controller
             'monto' => 'required|numeric|min:0',
         ]);
 
+        // TODO: reemplazar por auth()->id() una vez que el login esté funcionando
+        $validado['created_by'] = auth()->id() ?? 1;
+
         Project::create($validado);
 
         return redirect()->route('projects.index')->with('success', 'Proyecto creado correctamente.');
@@ -72,6 +74,12 @@ class ProjectController extends Controller
     // Requerimiento 4 (parte 2): Procesa el formulario y actualiza el proyecto
     public function update(Request $request, int $id)
     {
+        $proyecto = Project::find($id);
+
+        if (!$proyecto) {
+            return redirect()->route('projects.index')->with('error', "No existe un proyecto con id {$id}.");
+        }
+
         $validado = $request->validate([
             'nombre' => 'required|string|max:150',
             'fecha_inicio' => 'required|date',
@@ -80,16 +88,12 @@ class ProjectController extends Controller
             'monto' => 'required|numeric|min:0',
         ]);
 
-        $actualizado = Project::update($id, $validado);
-
-        if (!$actualizado) {
-            return redirect()->route('projects.index')->with('error', "No existe un proyecto con id {$id}.");
-        }
+        $proyecto->update($validado);
 
         return redirect()->route('projects.index')->with('success', 'Proyecto actualizado correctamente.');
     }
 
-        // Requerimiento 3 (parte 1): Muestra la confirmación antes de eliminar
+    // Requerimiento 3 (parte 1): Muestra la confirmación antes de eliminar
     public function confirmDelete(int $id)
     {
         $proyecto = Project::find($id);
@@ -104,12 +108,14 @@ class ProjectController extends Controller
     // Requerimiento 3 (parte 2): Elimina el proyecto por su id
     public function destroy(int $id)
     {
-        $eliminado = Project::delete($id);
+        $proyecto = Project::find($id);
 
-        return redirect()->route('projects.index')->with(
-            $eliminado ? 'success' : 'error',
-            $eliminado ? 'Proyecto eliminado correctamente.' : "No existe un proyecto con id {$id}."
-        );
+        if (!$proyecto) {
+            return redirect()->route('projects.index')->with('error', "No existe un proyecto con id {$id}.");
+        }
+
+        $proyecto->delete();
+
+        return redirect()->route('projects.index')->with('success', 'Proyecto eliminado correctamente.');
     }
-
 }
