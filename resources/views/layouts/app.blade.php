@@ -9,6 +9,16 @@
 
     <x-uf-widget />
 
+    @auth
+    <div style="text-align: right; padding: 10px;">
+        Hola, {{ auth()->user()->name }} —
+        <form action="{{ route('logout') }}" method="POST" style="display: inline;">
+            @csrf
+            <button type="submit">Cerrar sesión</button>
+        </form>
+    </div>
+@endauth
+
     @if (session('success'))
         <div class="popup popup-success" id="popup-mensaje">
             {{ session('success') }}

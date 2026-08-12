@@ -52,7 +52,7 @@ class ProjectController extends Controller
         ]);
 
         // TODO: reemplazar por auth()->id() una vez que el login esté funcionando
-        $validado['created_by'] = auth()->id() ?? 1;
+        $validado['created_by'] = auth()->id();
 
         Project::create($validado);
 
